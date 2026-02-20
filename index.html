@@ -10,11 +10,9 @@
     color: #e8ecff;
     background-color: #030712;
   }
-
   * {
     box-sizing: border-box;
   }
-
   body {
     margin: 0;
     min-height: 100vh;
@@ -24,12 +22,10 @@
     gap: 2rem;
     padding: 2rem min(6vw, 2.5rem) 3rem;
   }
-
   header {
     text-align: left;
     max-width: 780px;
   }
-
   .overline {
     text-transform: uppercase;
     letter-spacing: 0.4em;
@@ -37,13 +33,11 @@
     color: #6fc5ff;
     margin-bottom: 0.5rem;
   }
-
   h1 {
     margin: 0;
     font-size: clamp(2.4rem, 4vw, 3.8rem);
     line-height: 1.1;
   }
-
   .typewriter {
     display: inline-flex;
     align-items: center;
@@ -52,12 +46,10 @@
     margin-top: 0.8rem;
     color: #c6d7ff;
   }
-
   .typewriter span {
     display: inline-block;
     min-height: 1.4rem;
   }
-
   .cursor {
     width: 0.6rem;
     height: 1.6rem;
@@ -65,7 +57,6 @@
     background: #6fc5ff;
     animation: blink 2s steps(1) infinite;
   }
-
   @keyframes blink {
     0%, 49% {
       opacity: 1;
@@ -74,14 +65,12 @@
       opacity: 0;
     }
   }
-
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.5rem;
     width: 100%;
   }
-
   .module-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -96,32 +85,27 @@
     justify-content: space-between;
     transition: transform 0.5s ease, border-color 0.4s ease, box-shadow 0.4s ease;
   }
-
   .module-card:hover {
     transform: translateY(-10px);
     border-color: #6fc5ff;
     box-shadow: 0 20px 35px rgba(15, 35, 65, 0.7);
   }
-
   .module-card img {
     width: 60px;
     height: 60px;
     object-fit: cover;
     border-radius: 0.9rem;
   }
-
   .module-card h3 {
     margin: 0.8rem 0 0.3rem;
     font-size: 1.2rem;
   }
-
   .module-card p {
     margin: 0;
     color: rgba(232, 236, 255, 0.8);
     font-size: 0.95rem;
     line-height: 1.4;
   }
-
   .details-overlay {
     position: fixed;
     inset: 0;
@@ -134,12 +118,10 @@
     visibility: hidden;
     transition: opacity 0.4s ease;
   }
-
   .details-overlay.active {
     opacity: 1;
     visibility: visible;
   }
-
   .details-card {
     background: #0c172b;
     border-radius: 1.8rem;
@@ -149,22 +131,19 @@
     border: 1px solid rgba(111, 197, 255, 0.5);
     box-shadow: 0 35px 70px rgba(3, 7, 18, 0.8);
   }
-
   .details-card h3 {
     margin-top: 0;
     font-size: 1.8rem;
   }
-
   .details-card p {
     color: rgba(232, 236, 255, 0.8);
     line-height: 1.6;
+    min-height: 4rem;
   }
-
   .details-card ul {
     padding-left: 1rem;
     margin: 1rem 0;
   }
-
   .details-card button {
     border: none;
     background: #6fc5ff;
@@ -177,7 +156,6 @@
     margin-top: 1rem;
     transition: transform 0.3s ease;
   }
-
   .details-card button:hover {
     transform: translateY(-2px);
   }
@@ -254,6 +232,21 @@
     const detailsDescription = document.getElementById("details-description");
     const pointsList = document.getElementById("details-points");
     const closeBtn = document.getElementById("close-details");
+    let moduleTypewriterTimeout;
+
+    function typeText(element, text) {
+      clearTimeout(moduleTypewriterTimeout);
+      element.textContent = "";
+      let index = 0;
+      function step() {
+        element.textContent = text.slice(0, index + 1);
+        index++;
+        if (index < text.length) {
+          moduleTypewriterTimeout = setTimeout(step, 40);
+        }
+      }
+      step();
+    }
 
     modules.forEach((module) => {
       const card = document.createElement("article");
@@ -267,8 +260,8 @@
       `;
       card.addEventListener("click", () => {
         detailsTitle.textContent = module.title;
-        detailsDescription.textContent = module.summary;
         pointsList.innerHTML = module.details.map(point => `<li>${point}</li>`).join("");
+        typeText(detailsDescription, module.summary);
         overlay.classList.add("active");
       });
       grid.appendChild(card);
