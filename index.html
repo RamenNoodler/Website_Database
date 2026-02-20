@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Modular Database Interface</title>
+<style>
+  :root {
+    font-family: "Inter", system-ui, sans-serif;
+    color: #e8ecff;
+    background-color: #030712;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #1f2b5a, #030712 65%);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem min(6vw, 2.5rem) 3rem;
+  }
+
+  header {
+    text-align: left;
+    max-width: 780px;
+  }
+
+  .overline {
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    font-size: 0.75rem;
+    color: #6fc5ff;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 4vw, 3.8rem);
+    line-height: 1.1;
+  }
+
+  .typewriter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    margin-top: 0.8rem;
+    color: #c6d7ff;
+  }
+
+  .typewriter span {
+    display: inline-block;
+    min-height: 1.4rem;
+  }
+
+  .cursor {
+    width: 0.6rem;
+    height: 1.6rem;
+    border-radius: 0.2rem;
+    background: #6fc5ff;
+    animation: blink 2s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    0%, 49% {
+      opacity: 1;
+    }
+    50%, 100% {
+      opacity: 0;
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+  }
+
+  .module-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.4rem;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.5s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .module-card:hover {
+    transform: translateY(-10px);
+    border-color: #6fc5ff;
+    box-shadow: 0 20px 35px rgba(15, 35, 65, 0.7);
+  }
+
+  .module-card img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 0.9rem;
+  }
+
+  .module-card h3 {
+    margin: 0.8rem 0 0.3rem;
+    font-size: 1.2rem;
+  }
+
+  .module-card p {
+    margin: 0;
+    color: rgba(232, 236, 255, 0.8);
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .details-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 4, 12, 0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease;
+  }
+
+  .details-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .details-card {
+    background: #0c172b;
+    border-radius: 1.8rem;
+    padding: 2rem;
+    max-width: 600px;
+    width: 100%;
+    border: 1px solid rgba(111, 197, 255, 0.5);
+    box-shadow: 0 35px 70px rgba(3, 7, 18, 0.8);
+  }
+
+  .details-card h3 {
+    margin-top: 0;
+    font-size: 1.8rem;
+  }
+
+  .details-card p {
+    color: rgba(232, 236, 255, 0.8);
+    line-height: 1.6;
+  }
+
+  .details-card ul {
+    padding-left: 1rem;
+    margin: 1rem 0;
+  }
+
+  .details-card button {
+    border: none;
+    background: #6fc5ff;
+    color: #021029;
+    font-weight: 600;
+    padding: 0.85rem 1.4rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+    transition: transform 0.3s ease;
+  }
+
+  .details-card button:hover {
+    transform: translateY(-2px);
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="overline">Intelligent Repository</div>
+    <h1>Discover every module inside an evolving database</h1>
+    <div class="typewriter">
+      <span id="typewriter-text"></span>
+      <div class="cursor"></div>
+    </div>
+  </header>
+
+  <section class="grid" id="module-grid"></section>
+
+  <div class="details-overlay" id="details-overlay">
+    <div class="details-card">
+      <h3 id="details-title"></h3>
+      <p id="details-description"></p>
+      <ul id="details-points"></ul>
+      <button id="close-details">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const modules = [
+      {
+        title: "Aurora Data Vault",
+        summary: "Dynamic records wrapped in responsive visuals.",
+        image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=120&q=60",
+        details: [
+          "Encrypted snapshots stored in layered clusters.",
+          "Version branching with instant rollback.",
+          "AI-suggested metadata for each entry."
+        ]
+      },
+      {
+        title: "Pulse Metrics",
+        summary: "Live performance lanes for every workflow.",
+        image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=120&q=60",
+        details: [
+          "Streaming telemetry with failover health alerts.",
+          "Aggregated dashboards with interactive filters.",
+          "Predictive thresholds adapting per signal."
+        ]
+      },
+      {
+        title: "Nebula Journals",
+        summary: "Story-driven timelines with contextual links.",
+        image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=120&q=60",
+        details: [
+          "Cross-referenced entries with media embeds.",
+          "Smoothly animated transitions on focus.",
+          "Collaborative annotations and approvals."
+        ]
+      },
+      {
+        title: "Vector Mesh",
+        summary: "Context-rich relational graphs.",
+        image: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=120&q=60",
+        details: [
+          "High fidelity visual nodes with hover states.",
+          "Expandable insights on demand.",
+          "Syncs automatically with live sources."
+        ]
+      }
+    ];
+
+    const grid = document.getElementById("module-grid");
+    const overlay = document.getElementById("details-overlay");
+    const detailsTitle = document.getElementById("details-title");
+    const detailsDescription = document.getElementById("details-description");
+    const pointsList = document.getElementById("details-points");
+    const closeBtn = document.getElementById("close-details");
+
+    modules.forEach((module) => {
+      const card = document.createElement("article");
+      card.className = "module-card";
+      card.innerHTML = `
+        <img src="${module.image}" alt="${module.title}" />
+        <div>
+          <h3>${module.title}</h3>
+          <p>${module.summary}</p>
+        </div>
+      `;
+      card.addEventListener("click", () => {
+        detailsTitle.textContent = module.title;
+        detailsDescription.textContent = module.summary;
+        pointsList.innerHTML = module.details.map(point => `<li>${point}</li>`).join("");
+        overlay.classList.add("active");
+      });
+      grid.appendChild(card);
+    });
+
+    closeBtn.addEventListener("click", () => overlay.classList.remove("active"));
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) {
+        overlay.classList.remove("active");
+      }
+    });
+
+    const phrases = ["Connected modules.", "Effortless exploration.", "Timely insights."];
+    const typewriterElement = document.getElementById("typewriter-text");
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let typing = true;
+
+    function updateTypewriter() {
+      if (typing) {
+        const currentPhrase = phrases[phraseIndex];
+        typewriterElement.textContent = currentPhrase.slice(0, charIndex + 1);
+        charIndex++;
+        if (charIndex === currentPhrase.length) {
+          typing = false;
+          setTimeout(updateTypewriter, 1500);
+          return;
+        }
+      } else {
+        const currentPhrase = phrases[phraseIndex];
+        typewriterElement.textContent = currentPhrase.slice(0, charIndex - 1);
+        charIndex--;
+        if (charIndex === 0) {
+          typing = true;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+      setTimeout(updateTypewriter, typing ? 80 : 50);
+    }
+
+    updateTypewriter();
+  </script>
+</body>
+</html>
